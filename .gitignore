@@ -1,0 +1,39 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Output files
+output/
+*.mp4
+*.avi
+
+# Model files (may want to include these selectively)
+*.pt
+models/
+
+# Database files
+*.db
+
+# Logs
+logs/
+*.log 

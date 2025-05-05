@@ -1,6 +1,8 @@
 import csv
 import numpy as np
 from scipy.interpolate import interp1d
+import argparse
+import os
 
 
 def interpolate_bounding_boxes(data):
@@ -15,7 +17,7 @@ def interpolate_bounding_boxes(data):
     for car_id in unique_car_ids:
 
         frame_numbers_ = [p['frame_nmr'] for p in data if int(float(p['car_id'])) == int(float(car_id))]
-        print(frame_numbers_, car_id)
+        print(f"Processing car ID {car_id} with {len(frame_numbers_)} detections")
 
         # Filter data for a specific car ID
         car_mask = car_ids == car_id
@@ -77,17 +79,41 @@ def interpolate_bounding_boxes(data):
     return interpolated_data
 
 
-# Load the CSV file
-with open('test.csv', 'r') as file:
-    reader = csv.DictReader(file)
-    data = list(reader)
+def process_csv(input_file, output_file):
+    """Process the CSV file and interpolate missing data"""
+    # Create output directory if it doesn't exist
+    output_dir = os.path.dirname(output_file)
+    if output_dir and not os.path.exists(output_dir):
+        os.makedirs(output_dir, exist_ok=True)
+        
+    # Load the input CSV file
+    print(f"Reading data from: {input_file}")
+    with open(input_file, 'r') as file:
+        reader = csv.DictReader(file)
+        data = list(reader)
+    
+    print(f"Found {len(data)} detection records")
+    
+    # Interpolate missing data
+    interpolated_data = interpolate_bounding_boxes(data)
+    
+    # Write updated data to output CSV file
+    header = ['frame_nmr', 'car_id', 'car_bbox', 'license_plate_bbox', 'license_plate_bbox_score', 'license_number', 'license_number_score']
+    with open(output_file, 'w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=header)
+        writer.writeheader()
+        writer.writerows(interpolated_data)
+    
+    print(f"Interpolation complete. Output saved to: {output_file}")
+    print(f"Generated {len(interpolated_data)} interpolated records")
 
-# Interpolate missing data
-interpolated_data = interpolate_bounding_boxes(data)
 
-# Write updated data to a new CSV file
-header = ['frame_nmr', 'car_id', 'car_bbox', 'license_plate_bbox', 'license_plate_bbox_score', 'license_number', 'license_number_score']
-with open('test_interpolated.csv', 'w', newline='') as file:
-    writer = csv.DictWriter(file, fieldnames=header)
-    writer.writeheader()
-    writer.writerows(interpolated_data)
+if __name__ == "__main__":
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Interpolate missing data in license plate detection CSV')
+    parser.add_argument('--input', type=str, default='./test.csv', help='Path to input CSV file')
+    parser.add_argument('--output', type=str, default='./output/test_interpolated.csv', help='Path to output CSV file')
+    args = parser.parse_args()
+    
+    # Process the CSV file
+    process_csv(args.input, args.output)
