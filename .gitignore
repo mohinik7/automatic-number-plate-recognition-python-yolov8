@@ -36,4 +36,7 @@ models/
 
 # Logs
 logs/
-*.log 
+*.log
+
+# Embedded git repository
+sort/ 
